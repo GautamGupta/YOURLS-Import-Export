@@ -4,34 +4,18 @@
 
 class Red_Xml_File extends Red_FileIO
 {
-	function collect ($module)
+	function collect ( $items )
 	{
-		$this->name    = $module->name;
-		$this->id      = $module->id;
-		$this->type    = $module->type;
-		$this->options = unserialize ($module->options);
-
-		if (!is_array ($this->options))
-			$this->options = array ();
-
-		$this->groups = Red_Group::get_for_module ($module->id);
-		if (is_array ($this->groups) && count ($this->groups) > 0)
+		if (count( $items ) > 0)
 		{
-			$pager = new RE_Pager ($_GET, $_SERVER['REQUEST_URI'], 'position', 'ASC', 'log');
-			$pager->per_page = 0;
-
-			foreach ($this->groups AS $pos => $group)
-				$this->groups[$pos]->items = Red_Item::get_by_group ($group->id, $pager);
+			foreach ( $items as $item )
+				$this->items[] = array ( 'keyword' => $item->keyword, 'source' => '/' . $item->keyword . '/', 'url' => stripslashes( $item->url ), 'clicks' => $item->clicks, 'title' => $item->title, 'timestamp' => $item->timestamp, 'ip' => $item->ip );
 		}
-		else
-			$this->groups = array ();
-
-		return true;
 	}
 
 	function feed ($filename = '')
 	{
-		$filename = empty( $filename ) ? 'yourls_export.csv' : $filename;
+		$filename = empty( $filename ) ? 'yourls_export.xml' : $filename;
 
 		header ("Content-Type: text/xml");
 		header ("Cache-Control: no-cache, must-revalidate");
@@ -40,134 +24,91 @@ class Red_Xml_File extends Red_FileIO
 
 		echo '<?xml version="1.0" encoding="utf-8"?>';
 		?>
-<redirection>
-	<module name="<?php echo htmlspecialchars ($this->name) ?>" id="<?php echo $this->id ?>" type="<?php echo $this->type ?>">
-		<?php if (count ($this->options) > 0) : ?>
-		<options>
-			<?php foreach ($this->options AS $name => $value) : ?>
-			<option name="<?php echo $name ?>"><?php echo htmlspecialchars ($value) ?></option>
-			<?php endforeach; ?>
-		</options>
-		<?php endif; ?>
 
-		<?php if (count ($this->groups) > 0) :?>
-			<?php foreach ($this->groups AS $group) : ?>
-				<group id="<?php echo $group->id ?>" name="<?php echo htmlspecialchars ($group->name) ?>" status="<?php echo $group->status ?>" position="<?php echo $group->position ?>" tracking="<?php echo $group->tracking ?>">
-					<?php if (count ($group->items) > 0) : ?>
-						<?php foreach ($group->items AS $item) $this->output_item ($item); ?>
-					<?php endif; ?>
-				</group>
-			<?php endforeach; ?>
-		<?php endif; ?>
+<redirection>
+	<module name="YOURLS" id="1" type="wp">
+		<group id="1" name="YOURLS" status="enabled" position="0" tracking="1">
+<?php
+// URLs are fetched in reverse order and positions start from 0
+$position = count( $this->items ) - 1;
+if ( count( $this->items ) > 0 ) :
+	foreach ( $this->items as $item ) : ?>
+			<item id="<?php echo $item['keyword']; ?>" position="<?php echo $position; ?>" status="enabled">
+				<source><?php echo htmlspecialchars( $item['source'] ); ?></source>
+				<title><?php echo htmlspecialchars( $item['title'] ); ?></title>
+				<ip><?php echo htmlspecialchars( $item['ip'] ); ?></ip>
+				<match type="url" regex="0"></match>
+				<action type="url" code="301"><?php echo htmlspecialchars( $item['url'] ); ?></action>
+				<statistic count="<?php echo $item['clicks']; ?>" access="<?php echo $item['timestamp']; ?>"/>
+			</item>
+<?php
+		$position--;
+	endforeach;
+endif;
+?>
+		</group>
 	</module>
 </redirection>
-		<?php
-	}
-
-	function output_item ($item)
-	{
-		$data = unserialize ($item->action_data);
-		?>
-<item id="<?php echo $item->id ?>" position="<?php echo $item->position ?>" status="<?php echo $item->status ?>">
-	<source><?php echo htmlspecialchars ($item->url) ?></source>
-	<match type="<?php echo $item->match_type ?>" regex="<?php echo $item->regex ?>"></match>
-	<action type="<?php echo $item->action_type ?>" code="<?php echo $item->action_code ?>">
-		<?php if (is_array ($data) && count ($data) > 0) : ?>xxx
-			<?php foreach ($data AS $key => $value) : ?>
-				<option name="'.$key.'">
-					<?php if (is_array ($value)) : ?>
-						<?php echo htmlspecialchars (serialize ($value)); ?>
-					<?php else : ?>
-						<?php echo htmlspecialchars ($value); ?>
-					<?php endif; ?>
-				</option>
-			<?php endforeach; ?>
-		<?php else: ?>
-			<?php echo htmlspecialchars ($item->action_data); ?>
-		<?php endif; ?>
-	</action>
-	<statistic count="<?php echo $item->last_count ?>" access="<?php echo $item->last_access ?>"/>
-</item>
 <?php
 	}
 
-	function load ($group, $data)
-	{
+	function load ( $data ) {
+		global $ydb;
+
 		$count = 0;
-		if (function_exists ('simplexml_load_string'))
-		{
-			global $wpdb;
 
-			$xml = simplexml_load_string ($data);
+		if ( function_exists( 'simplexml_load_string' ) ) {
+			$xml = simplexml_load_string( $data );
+			$table = YOURLS_DB_TABLE_URL;
 
-			// Extract module
-			$moduledata = array
-			(
-				'type' => (string)$xml->module['type'],
-				'name' => sprintf (__ ('%s imported on %s at %s', 'redirection'), (string)$xml->module['name'], date ('M d Y'), date ('H:i'))
-			);
+			// From Redirection Plugin
+			if ( count( $xml->module->group ) > 0 ) {
+				foreach ( $xml->module->group as $group ) {
 
-			if (isset ($xml->module->options))
-			{
-				foreach ($xml->module->options->option AS $option)
-					$options[(string)$option['name']] = trim ((string)$option);
+					if ( count( $group->item ) > 0 ) {
+						foreach ( $group->item as $item ) {
+							// Not supported
+							if ( !empty( $item->action->option ) )
+								continue;
 
-				$moduledata['options'] = $options;
-			}
+							$keyword = trim( str_replace( '/', '', $item->source ) );
 
-			$module = Red_Module::create ($moduledata);
+							if ( !yourls_keyword_is_free( $keyword ) )
+								$keyword = '';
 
-			// Look at groups
-			if (count ($xml->module->group) > 0)
-			{
-				foreach ($xml->module->group AS $group)
-				{
-					$id = Red_Group::create (array ('module_id' => $module, 'name' => (string)$group['name'], 'status' => (string)$group['status'], 'position' => (string)$group['position']));
+							$title = !empty( $item->title ) ? trim( $item->title ) : '';
 
-					// Look at items
-					if (count ($group->item) > 0)
-					{
-						foreach ($group->item AS $item)
-						{
-							$actiondata = array ();
-							if (isset ($item->action->option) && count ($item->action->option) > 0)
-							{
-								foreach ($item->action->option AS $option)
-									$actiondata[(string)$option['key']] = trim ((string)$option);
+							$result = yourls_add_new_link( trim( (string) $item->action ), $keyword, $title );
 
-								$actiondata = serialize ($actiondata);
+							if ( $result['status'] == 'success' ) {
+								$count++;
+
+								$update_arr = array();
+
+								if ( !empty( $item->statistic['access'] ) )
+									$update_arr[] = '`timestamp` = "' . trim( $item->statistic['access'] ) . '"';
+
+								if ( !empty( $item->ip ) )
+									$update_arr[] = '`ip` = "' . trim( $item->ip ) . '"';
+
+								/* @see http://code.google.com/p/yourls/issues/detail?id=1036 */
+								if ( !empty( $item->statistic['count'] ) )
+									$update_arr[] = '`clicks` = ' . trim( $item->statistic['count'] );
+
+								$update_sql = implode( ', ', $update_arr );
+
+								if ( !empty( $update_sql ) )
+									$ydb->query( "UPDATE `$table` SET " . $update_sql . " WHERE `keyword` = '" . $result['url']['keyword'] . "'" );
 							}
-							else
-								$actiondata = trim ((string)$item->action);
-
-							$data = array
-							(
-								'group_id'    => $id,
-								'url'         => trim ((string)$item->source),
-								'position'    => intval ((string)$item['position']),
-								'status'      => (string)$item['status'],
-								'regex'       => (string)$item->match['regex'],
-								'match_type'  => (string)$item->match['type'],
-								'action_type' => (string)$item->action['type'],
-								'action_code' => (string)$item->action['code'],
-								'action_data' => $actiondata
-							);
-
-							foreach ($data AS $key => $value)
-								$data[$key] = "'".$wpdb->escape ($value)."'";
-
-							// Easier to insert it directly here
-							$wpdb->query ("INSERT INTO {$wpdb->prefix}redirection_items (".implode (',', array_keys ($data)).") VALUES (".implode (',', $data).")");
-							$count++;
 						}
 					}
+					
 				}
 			}
 		}
 		else
 		{
-			global $redirection;
-			$redirection->render_error (__ ('XML importing is only available with PHP5 - you have PHP4.', 'redirection'));
+			die( 'XML importing is only available with PHP5.' );
 		}
 
 		return $count;

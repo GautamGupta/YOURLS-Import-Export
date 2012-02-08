@@ -17,7 +17,7 @@ class Red_FileIO
 		$sort_order_sql = 'desc';
 
 		// Main Query
-		$items = $ydb->get_results("SELECT `keyword`, `url`, `clicks`, `timestamp` FROM `$table_url` WHERE 1=1 $where ORDER BY `$sort_by_sql` $sort_order_sql;");
+		$items = $ydb->get_results("SELECT * FROM `$table_url` WHERE 1=1 $where ORDER BY `$sort_by_sql` $sort_order_sql;");
 
 		if ( !empty( $items ) )
 		{
@@ -47,7 +47,7 @@ class Red_FileIO
 			if ( $parts['extension'] == 'xml') {
 				include dirname( __FILE__ ).'/xml.php';
 				$importer = new Red_Xml_File();
-				$data = @file_get_contents($file['tmp_name']);
+				$data = @file_get_contents( $file['tmp_name'] );
 			}
 			elseif ( $parts['extension'] == 'csv' ) {
 				include dirname( __FILE__ ).'/csv.php';
@@ -57,7 +57,7 @@ class Red_FileIO
 			else {
 				include dirname( __FILE__ ).'/apache.php';
 				$importer = new Red_Apache_File();
-				$data = @file_get_contents($file['tmp_name']);
+				$data = @file_get_contents( $file['tmp_name'] );
 			}
 
 			return $importer->load( $data, $file['tmp_name'] );

@@ -5,9 +5,9 @@
 class Red_Csv_File extends Red_FileIO
 {
 	function collect ($items) {
-		if (count ($items) > 0)
+		if ( count( $items ) > 0 )
 		{
-			foreach ($items AS $item)
+			foreach ( $items as $item )
 				$this->items[] = array ( 'source' => '/' . $item->keyword . '/', 'target' => stripslashes( $item->url ), 'hits' => $item->clicks );
 		}
 	}
@@ -83,7 +83,7 @@ class Red_Csv_File extends Red_FileIO
 				if ( $csv[0] != 'source' && $csv[1] != 'target') {
 					$keyword = trim( str_replace( '/', '', $csv[0] ) );
 
-					if ( !yourls_keyword_is_free($keyword) )
+					if ( !yourls_keyword_is_free( $keyword ) )
 						$keyword = '';
 
 					$result = yourls_add_new_link( trim( $csv[1] ), $keyword );

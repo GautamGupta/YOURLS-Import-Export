@@ -29,10 +29,10 @@ For full license details see license.txt
  */
 function yourls_imex_get_export_formats() {
 	return array(
+		'xml' => 'Extensible Markup Language (XML)',
 	//	'apache' => 'Apache',
-		'csv' => 'Comma separated values (CSV)',
+		'csv' => 'Comma Separated Values (CSV)',
 		'rss' => 'Really Simple Syndication (RSS)',
-	//	'xml' => 'Extensible Markup Language (XML)'
 	);
 }
 
@@ -69,7 +69,13 @@ function yourls_imex_do_page() {
 		<h2>Export</h2>
 HTML;
 
-	echo 'Export URLs in: ' . implode( ' | ', $export_urls );
+	echo '<strong>Export URLs in</strong>: ' . implode( ' | ', $export_urls );
+
+	echo <<<HTML
+		<br /><br />
+		XML is the preferred option if you're importing and exporting between two YOURLS installations.
+		CSV & XML work with the <a href="http://urbangiraffe.com/plugins/redirection/">Redirection</a> plugin for WordPress by John Goodley too.
+HTML;
 
 	echo <<<HTML
 		<br /><br />

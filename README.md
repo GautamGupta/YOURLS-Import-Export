@@ -7,8 +7,11 @@ Import/Export code has been heavily borrowed from the [Redirection](http://urban
 
 Supported things at the moment:
 
- 1. CSV - Import and Export (source, destination, hits). Compatible with the [Redirection](http://urbangiraffe.com/plugins/redirection/) plugin.
- 2. RSS - Export
+ 1. CSV - Import & Export (source, destination, hits).
+ 2. XML - Import & Export (all url data).
+ 3. RSS - Export
+
+CSV & XML are compatible with the [Redirection](http://urbangiraffe.com/plugins/redirection/) plugin.
 
 Installation
 ------------
