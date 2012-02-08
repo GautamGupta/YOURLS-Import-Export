@@ -1,0 +1,1 @@
+This plugin helps you import and export your YOURLS URLs.
