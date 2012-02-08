@@ -6,17 +6,20 @@ Description: Import and Export the URLs
 Version: 1.0
 Author: Gautam
 Author URI: http://gaut.am/
-============================================================================================================
-This software is provided "as is" and any express or implied warranties, including, but not limited to, the
-implied warranties of merchantibility and fitness for a particular purpose are disclaimed. In no event shall
-the copyright owner or contributors be liable for any direct, indirect, incidental, special, exemplary, or
-consequential damages(including, but not limited to, procurement of substitute goods or services; loss of
-use, data, or profits; or business interruption) however caused and on any theory of liability, whether in
-contract, strict liability, or tort(including negligence or otherwise) arising in any way out of the use of
-this software, even if advised of the possibility of such damage.
+================================================================================
+This software is provided "as is" and any express or implied warranties,
+including, but not limited to, the implied warranties of merchantibility and
+fitness for a particular purpose are disclaimed. In no event shall the copyright
+owner or contributors be liable for any direct, indirect, incidental, special,
+exemplary, or consequential damages(including, but not limited to, procurement
+of substitute goods or services; loss of use, data, or profits; or business
+interruption) however caused and on any theory of liability, whether in
+contract, strict liability, or tort(including negligence or otherwise) arising
+in any way out of the use of this software, even if advised of the possibility
+of such damage.
 
 For full license details see license.txt
-============================================================================================================
+================================================================================
 */
 
 /**
@@ -28,7 +31,7 @@ function yourls_imex_get_export_formats() {
 	return array(
 	//	'apache' => 'Apache',
 		'csv' => 'Comma separated values (CSV)',
-	//	'rss' => 'Really Simple Syndication (RSS)',
+		'rss' => 'Really Simple Syndication (RSS)',
 	//	'xml' => 'Extensible Markup Language (XML)'
 	);
 }
@@ -54,7 +57,7 @@ function yourls_imex_do_page() {
 
 		<p>Here you can import redirections from an existing a CSV file.</p>
 
-		<form action="' . yourls_add_query_arg( array( 'export' => $export_option ) ) . '" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+		<form action="' . yourls_remove_query_arg( array( 'import', 'export', 'nonce', 'action' ) ) . '" method="post" accept-charset="utf-8" enctype="multipart/form-data">
 			' . yourls_nonce_field( 'imex_import', 'nonce', false, false ) . '
 
 			<input type="file" name="import" value="" />
@@ -127,7 +130,7 @@ function yourls_imex_import_urls( $import_file ) {
  * @param string $format Format of the file to be exported. Check {@link yourls_imex_get_export_formats()}
  * @return boolean True on success, false on failure
  */
-function yourls_imex_export_urls($format = 'csv') {
+function yourls_imex_export_urls( $format = 'csv' ) {
 	$format = in_array( $format, array_keys( yourls_imex_get_export_formats() ) ) ? $format : 'csv';
 
 	require_once 'fileio/file_io.php';

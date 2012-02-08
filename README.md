@@ -5,7 +5,10 @@ YOURLS Import Export is a plugin for [YOURLS](http://yourls.org/) that helps you
 
 Import/Export code has been heavily borrowed from the [Redirection](http://urbangiraffe.com/plugins/redirection/) plugin for WordPress by John Godley.
 
-Only CSV import & export is functional at the present moment.
+Supported things at the moment:
+
+ 1. CSV - Import and Export (source, destination, hits). Compatible with the [Redirection](http://urbangiraffe.com/plugins/redirection/) plugin.
+ 2. RSS - Export
 
 Installation
 ------------
@@ -26,7 +29,7 @@ Contributing
 
  1. Fork it.
  2. Create a branch (`git checkout -b my-yourls-import-export`)
- 3. Commit your changes (`git commit -am "Added X Import/Export"`)
+ 3. Commit your changes (`git commit -m "Added X Import/Export"`)
  4. Push to the branch (`git push origin my-yourls-import-export`)
  5. Create an Issue with a link to your branch
  6. Enjoy a refreshing Diet Coke and wait

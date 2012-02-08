@@ -4,26 +4,20 @@
 
 class Red_Rss_File extends Red_FileIO
 {
-	function collect ($items)
+	function collect ( $items )
 	{
-		if (count ($items) > 0)
+		if ( count ( $items ) > 0 )
 		{
-			foreach ($items AS $item)
-				$this->items[] = array ( 'id' > $item->keyword, 'url' => '/' . $item->keyword . '/', 'destination' => stripslashes( $item->url ), 'created_at' => 'timestamp' );
+			foreach ( $items as $item )
+				$this->items[] = array( 'id' => $item->keyword, 'url' => '/' . $item->keyword . '/', 'destination' => stripslashes( $item->url ), 'created_at' => 'timestamp' );
 		}
 	}
 
-	function feed ($title = '')
+	function feed ( $title = '' )
 	{
 		$title = empty( $title ) ? 'YOURLS Log' : $title;
 
-		if (!empty($this->items))
-		{
-			$lastPubDate = reset(array_reverse($this->items));
-			$lastPubDate = $lastPubDate->created_at;
-		}
-
-		header('Content-type: text/xml; charset=utf-8', true);
+		header( 'Content-type: text/xml; charset=utf-8', true );
 		echo '<?xml version="1.0" encoding="utf-8"?>' . "\r\n";
 ?>
 <rss version="2.0"
@@ -33,21 +27,21 @@ class Red_Rss_File extends Red_FileIO
 <channel>
 	<title><?php echo $title; ?></title>
 	<link><?php yourls_site_url(); ?></link>
-	<description>URLs Log</description>
-	<?php if ( !empty( $lastPubDate ) ) : ?>
-	<pubDate><?php echo htmlspecialchars (date('D, d M Y H:i:s +0000', $lastPubDate)); ?></pubDate>
+	<description>Log of <?php yourls_site_url(); ?> short URLs</description>
+	<?php if ( !empty( $this->items[0]['created_at'] ) ) : ?>
+	<pubDate><?php echo htmlspecialchars( date( 'D, d M Y H:i:s +0000', strtotime( $this->items[0]['created_at'] ) ) ); ?></pubDate>
 	<?php endif; ?>
 	<language>en</language>
-<?php
-		if (count ($this->items) > 0) :
-			foreach ($this->items as $log) : ?>
+	<?php
+		if ( count( $this->items ) > 0 ) :
+			foreach ( $this->items as $log ) : ?>
 	<item>
-		<title><![CDATA[<?php echo $log->url; ?>]]></title>
-		<link><![CDATA[<?php yourls_site_url(); echo $log->url; ?>]]></link>
-		<pubDate><?php echo date('D, d M Y H:i:s +0000', strtotime($log->created_at)); ?></pubDate>
-		<guid isPermaLink="false"><?php print($log->id); ?></guid>
-		<description><![CDATA[<?php echo $log->url; ?>]]></description>
-		<content:encoded><![CDATA[<?php if ($log->referrer) echo 'Referred by '.$log->referrer; ?>]]></content:encoded>
+		<title><![CDATA[<?php echo $log['url']; ?>]]></title>
+		<link><![CDATA[<?php echo yourls_link( $log['id'] ); ?>]]></link>
+		<pubDate><?php echo date( 'D, d M Y H:i:s +0000', strtotime( $log['created_at'] ) ); ?></pubDate>
+		<guid isPermaLink="false"><?php echo $log['id']; ?></guid>
+		<description><![CDATA[<?php echo $log['url']; ?>]]></description>
+		<content:encoded><![CDATA[<?php echo $log['destination']; ?>]]></content:encoded>
 	</item>
 		<?php endforeach; endif; ?>
 </channel>
