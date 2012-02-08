@@ -1,54 +1,60 @@
 <?php
 
+// Code heavily borrowed from the Redirection plugin (http://urbangiraffe.com/plugins/redirection/) for WordPress by John Godley
+
 class Red_Rss_File extends Red_FileIO
 {
-	var $title;
-	
-	function collect ($module)
+	function collect ($items)
 	{
-		$pager = new RE_Pager ($_GET, $_SERVER['REQUEST_URI'], 'created', 'DESC', 'log');
-		$pager->per_page = 100;
-		
-		$this->name  = $module->name;
-		$this->items = RE_Log::get_by_module ($pager, $module->id);
+		if (count ($items) > 0)
+		{
+			foreach ($items AS $item)
+				$this->items[] = array ( 'id' > $item->keyword, 'url' => '/' . $item->keyword . '/', 'destination' => stripslashes( $item->url ), 'created_at' => 'timestamp' );
+		}
 	}
-	
-	function feed ()
-	{
-		$title = sprintf ('%s log', $this->name);
 
-		header ('Content-type: text/xml; charset='.get_option ('blog_charset'), true);
-		echo '<?xml version="1.0" encoding="'.get_option ('blog_charset').'"?'.">\r\n";
+	function feed ($title = '')
+	{
+		$title = empty( $title ) ? 'YOURLS Log' : $title;
+
+		if (!empty($this->items))
+		{
+			$lastPubDate = reset(array_reverse($this->items));
+			$lastPubDate = $lastPubDate->created_at;
+		}
+
+		header('Content-type: text/xml; charset=utf-8', true);
+		echo '<?xml version="1.0" encoding="utf-8"?>' . "\r\n";
 ?>
-<rss version="2.0" 
+<rss version="2.0"
 	xmlns:content="http://purl.org/rss/1.0/modules/content/"
 	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
 	xmlns:dc="http://purl.org/dc/elements/1.1/">
 <channel>
-	<title><?php echo $title.' - '; bloginfo_rss ('name'); ?></title>
-	<link><?php bloginfo_rss('url') ?></link>
-	<description><?php bloginfo_rss("description") ?></description>
-	<pubDate><?php echo htmlspecialchars (mysql2date('D, d M Y H:i:s +0000', get_lastpostmodified('GMT'), false)); ?></pubDate>
-	<generator><?php echo htmlspecialchars ('http://wordpress.org/?v='); bloginfo_rss ('version'); ?></generator>
-	<language><?php echo get_option ('rss_language'); ?></language>
+	<title><?php echo $title; ?></title>
+	<link><?php yourls_site_url(); ?></link>
+	<description>URLs Log</description>
+	<?php if ( !empty( $lastPubDate ) ) : ?>
+	<pubDate><?php echo htmlspecialchars (date('D, d M Y H:i:s +0000', $lastPubDate)); ?></pubDate>
+	<?php endif; ?>
+	<language>en</language>
 <?php
-		if (count ($this->items) > 0)
-		{
+		if (count ($this->items) > 0) :
 			foreach ($this->items as $log) : ?>
 	<item>
 		<title><![CDATA[<?php echo $log->url; ?>]]></title>
-		<link><![CDATA[<?php bloginfo ('home'); echo $log->url; ?>]]></link>
-		<pubDate><?php echo mysql2date('D, d M Y H:i:s +0000', $log->created_at, false); ?></pubDate>
+		<link><![CDATA[<?php yourls_site_url(); echo $log->url; ?>]]></link>
+		<pubDate><?php echo date('D, d M Y H:i:s +0000', strtotime($log->created_at)); ?></pubDate>
 		<guid isPermaLink="false"><?php print($log->id); ?></guid>
 		<description><![CDATA[<?php echo $log->url; ?>]]></description>
 		<content:encoded><![CDATA[<?php if ($log->referrer) echo 'Referred by '.$log->referrer; ?>]]></content:encoded>
 	</item>
-		<?php endforeach; } ?>
+		<?php endforeach; endif; ?>
 </channel>
 </rss>
 <?php
 		die();
 	}
 }
-	
+
 ?>

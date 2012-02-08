@@ -1,5 +1,7 @@
 <?php
 
+// Code heavily borrowed from the Redirection plugin (http://urbangiraffe.com/plugins/redirection/) for WordPress by John Godley
+
 if (!function_exists ('strpbrk'))
 {
   function strpbrk( $haystack, $char_list )

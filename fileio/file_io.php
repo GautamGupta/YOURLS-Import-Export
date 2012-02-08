@@ -1,5 +1,7 @@
 <?php
 
+// Code heavily borrowed from the Redirection plugin (http://urbangiraffe.com/plugins/redirection/) for WordPress by John Godley
+
 class Red_FileIO
 {
 	var $items = array ();
@@ -13,10 +15,10 @@ class Red_FileIO
 		// Default SQL behavior
 		$where = '';
 		$sort_by_sql = 'timestamp';
-		$sort_order_sql = 'asc';
+		$sort_order_sql = 'desc';
 
 		// Main Query
-		$items = $ydb->get_results("SELECT `keyword`, `url`, `clicks` FROM `$table_url` WHERE 1=1 $where ORDER BY `$sort_by_sql` $sort_order_sql;");
+		$items = $ydb->get_results("SELECT `keyword`, `url`, `clicks`, `timestamp` FROM `$table_url` WHERE 1=1 $where ORDER BY `$sort_by_sql` $sort_order_sql;");
 
 		if (!empty($items))
 		{
@@ -39,7 +41,7 @@ class Red_FileIO
 		return false;
 	}
 
-	function import( $group, $file ) {
+	function import( $file ) {
 		if ( is_uploaded_file( $file['tmp_name'] ) ) {
 			$parts = pathinfo( $file['name'] );
 
@@ -59,7 +61,7 @@ class Red_FileIO
 				$data = @file_get_contents ($file['tmp_name']);
 			}
 
-			return $importer->load( $group, $data, $file['tmp_name'] );
+			return $importer->load( $data, $file['tmp_name'] );
 		}
 
 		return 0;

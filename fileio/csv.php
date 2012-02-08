@@ -1,5 +1,7 @@
 <?php
 
+// Code heavily borrowed from the Redirection plugin (http://urbangiraffe.com/plugins/redirection/) for WordPress by John Godley
+
 class Red_Csv_File extends Red_FileIO
 {
 	function collect ($items) {
@@ -48,44 +50,51 @@ class Red_Csv_File extends Red_FileIO
 
 	function parse_csv ($string, $separator = ',')
 	{
-    $string   = str_replace('""', "'", $string);
-    $bits     = explode ('"',$string);
-    $elements = array ();
+		$string   = str_replace('""', "'", $string);
+		$bits     = explode ('"',$string);
+		$elements = array ();
 
-    for ($i = 0; $i < count ($bits) ; $i++)
-		{
-			if (($i % 2) == 1)
-				$elements[] = $bits[$i];
-			else
+		for ($i = 0; $i < count ($bits) ; $i++)
 			{
-				$rest = $bits[$i];
-				$rest = preg_replace ('/^'.$separator.'/', '', $rest);
-				$rest = preg_replace ('/'.$separator.'$/', '', $rest);
+				if (($i % 2) == 1)
+					$elements[] = $bits[$i];
+				else
+				{
+					$rest = $bits[$i];
+					$rest = preg_replace ('/^'.$separator.'/', '', $rest);
+					$rest = preg_replace ('/'.$separator.'$/', '', $rest);
 
-				$elements = array_merge ($elements, explode ($separator, $rest));
-			}
-    }
+					$elements = array_merge ($elements, explode ($separator, $rest));
+				}
+		}
 
-    return $elements;
+		return $elements;
 	}
 
-	function load( $group, $data, $filename ) {
+	function load( $data, $filename ) {
+		global $ydb;
+
 		$count = 0;
 		$file  = fopen( $filename, 'r' );
+		$table = YOURLS_DB_TABLE_URL;
 
 		if ( $file ) {
-			while ( ( $csv = fgetcsv( $file, 1000, ',' ) ) ) {
+			while ( $csv = fgetcsv( $file, 1000, ',' ) ) {
 				if ( $csv[0] != 'source' && $csv[1] != 'target') {
-					Red_Item::create( array(
-						'source' => trim( $csv[0] ),
-						'target' => trim( $csv[1] ),
-						'regex'  => $this->is_regex( $csv[0] ),
-						'group'  => $group,
-						'match'  => 'url',
-						'red_action' => 'url'
-					) );
+					$keyword = trim( str_replace( '/', '', $csv[0] ) );
 
-					$count++;
+					if ( !yourls_keyword_is_free($keyword) )
+						$keyword = '';
+
+					$result = yourls_add_new_link( trim( $csv[1] ), $keyword );
+
+					if ( $result['status'] == 'success' ) {
+						$count++;
+
+						/* @see http://code.google.com/p/yourls/issues/detail?id=1036 */
+						if ( !empty( $csv[2] ) )
+							$ydb->query( "UPDATE `$table` SET `clicks` = " . trim( $csv[2] ) . " WHERE `keyword` = '" . $result['url']['keyword'] . "'" );
+					}
 				}
 			}
 		}

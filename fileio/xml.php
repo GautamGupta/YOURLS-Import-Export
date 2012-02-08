@@ -1,5 +1,7 @@
 <?php
 
+// Code heavily borrowed from the Redirection plugin (http://urbangiraffe.com/plugins/redirection/) for WordPress by John Godley
+
 class Red_Xml_File extends Red_FileIO
 {
 	function collect ($module)
