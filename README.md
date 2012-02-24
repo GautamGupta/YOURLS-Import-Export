@@ -13,6 +13,10 @@ Supported things at the moment:
 
 CSV & XML are compatible with the [Redirection](http://urbangiraffe.com/plugins/redirection/) plugin.
 
+Requirements
+------------
+YOURLS [r708](http://code.google.com/p/yourls/source/browse/trunk?r=708)+ installation (that is newer than the v1.5 release).
+
 Installation
 ------------
 
