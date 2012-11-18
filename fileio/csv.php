@@ -74,6 +74,7 @@ class Red_Csv_File extends Red_FileIO
 	function load( $data, $filename ) {
 		global $ydb;
 
+		ini_set( 'auto_detect_line_endings', true );
 		$count = 0;
 		$file  = fopen( $filename, 'r' );
 		$table = YOURLS_DB_TABLE_URL;
