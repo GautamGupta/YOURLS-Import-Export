@@ -72,9 +72,9 @@ class Red_Csv_File extends Red_FileIO
 	}
 
 	function load( $data, $filename ) {
-		global $ydb;
 
-		ini_set( 'auto_detect_line_endings', true );
+        $ydb = yourls_get_db();
+
 		$count = 0;
 		$file  = fopen( $filename, 'r' );
 		$table = YOURLS_DB_TABLE_URL;
@@ -94,7 +94,7 @@ class Red_Csv_File extends Red_FileIO
 
 						/* @see http://code.google.com/p/yourls/issues/detail?id=1036 */
 						if ( !empty( $csv[2] ) )
-							$ydb->query( "UPDATE `$table` SET `clicks` = " . trim( $csv[2] ) . " WHERE `keyword` = '" . $result['url']['keyword'] . "'" );
+                            $ydb->perform( "UPDATE `$table` SET `clicks` = " . trim( $csv[2] ) . " WHERE `keyword` = '" . $result['url']['keyword'] . "'" );
 					}
 				}
 			}
@@ -110,9 +110,9 @@ class Red_Csv_File extends Red_FileIO
 
 		for ($x = 0; $x < strlen ($url); $x++)
 		{
-			if ($url{$x} == '\\')
+			if ($url[$x] == '\\')
 				$escape = true;
-			else if (strpos ($regex, $url{$x}) !== false && !$escape)
+			else if (strpos ($regex, $url[$x]) !== false && !$escape)
 				return true;
 			else
 				$escape = false;

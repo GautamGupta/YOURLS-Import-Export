@@ -52,8 +52,9 @@ endif;
 <?php
 	}
 
-	function load ( $data ) {
-		global $ydb;
+	function load ( $data, $filename ) {
+
+        $ydb = yourls_get_db();
 
 		$count = 0;
 
@@ -98,11 +99,11 @@ endif;
 								$update_sql = implode( ', ', $update_arr );
 
 								if ( !empty( $update_sql ) )
-									$ydb->query( "UPDATE `$table` SET " . $update_sql . " WHERE `keyword` = '" . $result['url']['keyword'] . "'" );
+									$ydb->perform( "UPDATE `$table` SET " . $update_sql . " WHERE `keyword` = '" . $result['url']['keyword'] . "'" );
 							}
 						}
 					}
-					
+
 				}
 			}
 		}
