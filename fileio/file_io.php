@@ -7,7 +7,7 @@ class Red_FileIO
 	var $items = array();
 
 	function export ( $type ) {
-		global $ydb;
+		$ydb = yourls_get_db();
 
 		// Variables
 		$table_url = YOURLS_DB_TABLE_URL;
@@ -17,10 +17,12 @@ class Red_FileIO
 		$sort_order_sql = 'desc';
 
 		// Main Query
-		$items = $ydb->get_results("SELECT * FROM `$table_url` WHERE 1=1 $where ORDER BY `$sort_by_sql` $sort_order_sql;");
+        $items = $ydb->fetchObjects("SELECT * FROM `$table_url` WHERE 1=1 $where ORDER BY `$sort_by_sql` $sort_order_sql;");
 
-		if ( !empty( $items ) )
-		{
+
+        if( $items ) {
+            $items = (array)$items;
+
 			require_once $type . '.php';
 
 			if ($type == 'rss')
