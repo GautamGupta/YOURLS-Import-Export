@@ -3,7 +3,7 @@
 Plugin Name: YOURLS Import Export
 Plugin URI: http://gaut.am/plugins/yourls/yourls-import-export/
 Description: Import and Export the URLs
-Version: 1.0
+Version: 1.0.1
 Author: Gautam
 Author URI: http://gaut.am/
 ================================================================================
