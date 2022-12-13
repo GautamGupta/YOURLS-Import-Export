@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: YOURLS Import Export
-Plugin URI: http://gaut.am/plugins/yourls/yourls-import-export/
+Plugin URI: https://github.com/GautamGupta/YOURLS-Import-Export
 Description: Import and Export the URLs
 Version: 1.0.1
 Author: Gautam
